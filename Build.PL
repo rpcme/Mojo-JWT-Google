@@ -13,8 +13,8 @@ my $build = Module::Build->new(
       'strictures'  => 0,
       'Time::HiRes' => 0,
     },
-  dist_name     => 'Mojo::JWT',
-  dist_version  => '0.1',
+  dist_name     => 'Mojo::JWT::Google',
+  dist_version  => '0.01',
   dist_author   => 'Richard Elberger riche@cpan.org',
   dist_abstract => 'Easily create Google JWT for Service Account operations',
 );

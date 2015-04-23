@@ -203,3 +203,22 @@ sub from_json {
 }
 
 1;
+
+=head1 SEE ALSO
+
+L<Mojo::JWT>
+
+SOURCE REPOSITORY
+
+L<http://github.com/rpcme/Mojo-JWT-Google>
+
+=head1 AUTHOR
+
+Richard Elberger, <riche@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2015 by Richard Elberger
+
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
