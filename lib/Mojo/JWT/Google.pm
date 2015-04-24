@@ -47,10 +47,9 @@ somewhere.  This will ease some busy work in configuring the object -- with
 virtually the only things to do is determine the scopes and the user_as if you
 need to impersonate.
 
-my $gjwt = Mojo::JWT::Google
-  ->new( from_json => '/my/secret.json',
-         scopes    => [ '/my/scope/a', '/my/scope/b' ])->encode;
-
+ my $gjwt = Mojo::JWT::Google
+   ->new( from_json => '/my/secret.json',
+          scopes    => [ '/my/scope/a', '/my/scope/b' ])->encode;
 
 =cut
 
@@ -209,7 +208,7 @@ sub from_json {
 
 L<Mojo::JWT>
 
-SOURCE REPOSITORY
+=head1 SOURCE REPOSITORY
 
 L<http://github.com/rpcme/Mojo-JWT-Google>
 
