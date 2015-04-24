@@ -1,7 +1,7 @@
 use strictures;
 use Test::More;
 use Mojo::JWT::Google;
-use File::Basename;
+use File::Basename 'dirname';
 
 isa_ok my $g1 = Mojo::JWT::Google->new, 'Mojo::JWT::Google';
 
@@ -61,8 +61,15 @@ isa_ok my $g3 = Mojo::JWT::Google->new( scopes => ['/scope/a/', '/scope/b/']),
 my $tdir = dirname ( __FILE__ );
 isa_ok my $g4 = Mojo::JWT::Google->new( from_json => $tdir . '/load1.json' ),
   'Mojo::JWT::Google';
-is $g4->secret, "-----BEGIN PRIVATE KEY-----\nMIIC\nk8KLWw6r/ERRBg==\n-----END PRIVATE KEY-----\n", 'secret match';
-is $g4->client_email, '9dvse@developer.gserviceaccount.com', 'client email matches';
+is $g4->secret, <<EOF, 'secret match';
+-----BEGIN PRIVATE KEY-----
+MIIC
+k8KLWw6r/ERRBg==
+-----END PRIVATE KEY-----
+EOF
+
+is $g4->client_email, '9dvse@developer.gserviceaccount.com',
+  'client email matches';
 
 is $g4->from_json, 0, 'requires parameter';
 is $g4->from_json('/foo/bar/baz/me'), 0, 'file must exist';

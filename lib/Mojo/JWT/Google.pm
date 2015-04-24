@@ -2,6 +2,7 @@ package Mojo::JWT::Google;
 use parent Mojo::JWT;
 use strictures;
 use vars qw($VERSION);
+use File::Spec::Functions 'catfile';
 use Time::HiRes qw/gettimeofday/;
 use Mojo::Util qw(slurp);
 use Mojo::JSON qw(decode_json);
@@ -195,7 +196,7 @@ sub from_json {
   my ($self, $value) = @_;
   return 0 if not defined $value;
   return 0 if not -f $value;
-  my $json = decode_json( slurp ( $value ) );
+  my $json = decode_json( slurp ( catfile( $value ) ) );
   return 0 if not defined $json->{private_key};
   return 0 if $json->{type} ne 'service_account';
   $self->secret($json->{private_key});
