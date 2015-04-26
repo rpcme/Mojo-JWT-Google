@@ -1,16 +1,73 @@
 package Mojo::JWT::Google;
-use parent Mojo::JWT;
-use strictures;
+use Mojo::Base qw(Mojo::JWT);
 use vars qw($VERSION);
 use File::Spec::Functions 'catfile';
-use Time::HiRes qw/gettimeofday/;
+use Mojo::Collection 'c';
 use Mojo::Util qw(slurp);
 use Mojo::JSON qw(decode_json);
 
 BEGIN {
-  $Mojo::JWT::Google::VERSION = '0.01';
+  $Mojo::JWT::Google::VERSION = '0.02';
 }
-my $grant_type = "urn:ietf:params:oauth:grant-type:jwt-bearer";
+
+has client_email => undef;
+has expires_in   => 3600;
+has issue_at     => undef;
+has scopes       => sub { c->new };
+has target       => q(https://www.googleapis.com/oauth2/v3/token);
+has user_as      => undef;
+
+sub new {
+  my ($class, %options) = @_;
+  my $self = $class->SUPER::new(%options);
+  $self->from_json($self->{from_json}) if defined $self->{from_json};
+  return $self;
+}
+
+#Mojo::JWT::Google->attr( claims => sub {
+#  return shift->_construct_claims;
+#}, sub { {} });
+
+sub claims {
+  my ($self, $value) = @_;
+  if (defined $value) {
+    $self->{claims} = $value;
+    return $self;
+  }
+  return $self->_construct_claims;
+}
+
+sub _construct_claims {
+  my $self = shift;
+  my $result = {};
+  $result->{iss}   = $self->client_email;
+  $result->{scope} = $self->scopes->join(' ');
+  $result->{aud}   = $self->target;
+  $result->{sub}   = $self->user_as if defined $self->user_as;
+
+  if ( not defined $self->issue_at ) {
+    $self->set_iat(1);
+  }
+  else {
+    $self->set_iat(0);
+    $result->{iat} = $self->issue_at;
+    $result->{exp} = $self->issue_at + $self->expires_in;
+  }
+  return $result;
+}
+
+sub from_json {
+  my ($self, $value) = @_;
+  return 0 if not defined $value;
+  return 0 if not -f $value;
+  my $json = decode_json( slurp ( catfile( $value ) ) );
+  return 0 if not defined $json->{private_key};
+  return 0 if $json->{type} ne 'service_account';
+  $self->secret($json->{private_key});
+  $self->client_email($json->{client_email});
+}
+
+1;
 
 
 =head1 NAME
@@ -53,16 +110,6 @@ need to impersonate.
 
 =cut
 
-
-
-sub new {
-  my ($class, %options) = @_;
-  my $self = bless \%options, $class;
-  $self->{scopes} = [] if not defined $self->{scopes};
-  $self->from_json($self->{from_json}) if defined $self->{from_json};
-  return $self;
-}
-
 =head1 ATTRIBUTES
 
 L<Mojo::JWT::Google> inherits all attributes from L<Mojo::JWT> and defines the
@@ -73,27 +120,31 @@ following new ones.
 Overrides the parent class and constructs a hashref representing Google's
 required attribution.
 
-=cut
 
-sub claims {
-  my ($self) = @_;
+=head2 client_email
 
-  $self->issue_at( defined $self->issue_at   ? $self->issue_at :
-                                               (gettimeofday)[0] );
+Get or set the Client ID email address.
 
-  $self->expire_at( defined $self->expire_at ? $self->expire_at :
-                                               $self->issue_at + 3600 );
+=head2 expires_in
 
-  my $result = { iss   => $self->client_email,
-                 scope => join( ' ', @{ $self->scopes } ),
-                 aud   => $self->target,
-                 exp   => $self->expire_at,
-                 iat   => $self->issue_at,
-               };
+Defines the threshold for when the token expires.  Defaults to 3600.
 
-  $result->{sub} = $self->user_as if defined $self->user_as;
-  return $result;
-}
+=head2 issue_at
+
+Defines the time of issuance in epoch seconds. If not defined, the claims issue
+at date defaults to the time when it is being encoded.
+
+=head2 scopes
+
+Get or set the Google scopes.  If impersonating, these scopes must be set up by
+your Google Business Administrator.
+
+=head2 target
+
+Get or set the target.  At the time of writing, there is only one valid target:
+https://www.googleapis.com/oauth2/v3/token.  This is the default value; if you
+have no need to customize this, then just fetch the default.
+
 
 =head2 user_as
 
@@ -102,79 +153,6 @@ have already set up your Client ID as a trusted app in order to use this
 successfully.
 
 =cut
-
-sub user_as {
-  my ($self, $value) = @_;
-  $self->{user_as} = $value if defined $value;
-  return $self->{user_as};
-}
-
-=head2 scopes
-
-Get or set the Google scopes.  If impersonating, these scopes must be set up by
-your Google Business Administrator.
-
-=cut
-
-sub scopes {
-  my ($self, $value) = @_;
-  push @{ $self->{scopes} }, $value if defined $value;
-  return $self->{scopes};
-}
-
-=head2 client_email
-
-Get or set the Client ID email address.
-
-=cut
-
-sub client_email {
-  my ($self, $value) = @_;
-  $self->{client_email} = $value if defined $value;
-  return $self->{client_email};
-}
-
-=head2 target
-
-Get or set the target.  At the time of writing, there is only one valid target:
-https://www.googleapis.com/oauth2/v3/token.  This is the default value; if you
-have no need to customize this, then just fetch the default.
-
-=cut
-
-sub target {
-  my ($self, $value) = @_;
-  $self->{target} = $value if defined $value;
-  $self->{target} = q(https://www.googleapis.com/oauth2/v3/token)
-    if not defined $self->{target};
-  return $self->{target};
-}
-
-=head2 expire_at
-
-Defines when the token expires.  The maximum is 60 minutes from the issue
-epoch time.  The default is 60 minutes from the issue epoch time.
-
-=cut
-
-sub expire_at {
-  my ($self, $value) = @_;
-  $self->{expire_at} = $value if defined $value;
-  return $self->{expire_at};
-}
-
-=head2 issue_at
-
-Defines the time of issuance in epoch seconds. If not defined, the claims issue
-at date defaults to the time when it is being encoded.
-
-=cut
-
-sub issue_at {
-  my ($self, $value) = @_;
-  $self->{issue_at} = $value if defined $value;
-  return $self->{issue_at};
-}
 
 =head1 METHODS
 
@@ -189,20 +167,6 @@ Returns 0 on failure: file not found or value not defined
 
  $gjwt->from_json('/my/google/app/project/sa/json/file');
 
-=cut
-
-sub from_json {
-  my ($self, $value) = @_;
-  return 0 if not defined $value;
-  return 0 if not -f $value;
-  my $json = decode_json( slurp ( catfile( $value ) ) );
-  return 0 if not defined $json->{private_key};
-  return 0 if $json->{type} ne 'service_account';
-  $self->secret($json->{private_key});
-  $self->client_email($json->{client_email});
-}
-
-1;
 
 =head1 SEE ALSO
 
