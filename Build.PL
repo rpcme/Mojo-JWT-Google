@@ -8,9 +8,10 @@ use Module::Build;
 
 my $build = Module::Build->new(
   module_name   => 'Mojo::JWT::Google',
+  configure_requires => { 'Module::Build' => 0.42 },
   requires      => { 'Mojo::JWT'   => '>= 0.03', },
   dist_name     => 'Mojo-JWT-Google',
-  dist_version  => '0.02',
+  dist_version  => '0.03',
   dist_author   => 'Richard Elberger riche@cpan.org',
   dist_abstract => 'Easily create Google JWT for Service Account operations',
 );

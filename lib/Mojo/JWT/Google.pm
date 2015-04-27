@@ -7,7 +7,7 @@ use Mojo::Util qw(slurp);
 use Mojo::JSON qw(decode_json);
 
 BEGIN {
-  $Mojo::JWT::Google::VERSION = '0.02';
+  $Mojo::JWT::Google::VERSION = '0.03';
 }
 
 has client_email => undef;
@@ -20,7 +20,14 @@ has user_as      => undef;
 sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
-  $self->from_json($self->{from_json}) if defined $self->{from_json};
+  return $self if not defined $self->{from_json};
+
+  my $result = $self->from_json($self->{from_json});
+
+  if ( $result == 0 ) {
+    say 'Your JSON file import failed.';
+    return undef;
+  }
   return $self;
 }
 
@@ -65,6 +72,7 @@ sub from_json {
   return 0 if $json->{type} ne 'service_account';
   $self->secret($json->{private_key});
   $self->client_email($json->{client_email});
+  return 1
 }
 
 1;

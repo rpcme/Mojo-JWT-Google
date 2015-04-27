@@ -3,6 +3,8 @@ use Test::More;
 use Mojo::JWT::Google;
 use Mojo::Collection 'c';
 use File::Basename 'dirname';
+use FindBin;
+use Cwd 'abs_path';
 #my $grant_type = "urn:ietf:params:oauth:grant-type:jwt-bearer";
 
 my $client_email = 'mysa@developer.gserviceaccount.com';
@@ -73,8 +75,13 @@ my $claims = $jwt->claims;
 $jwt = Mojo::JWT::Google->new( scopes => c('/scope/a/', '/scope/b/'));
 
 # predefine w json file
-my $tdir = dirname ( __FILE__ );
-$jwt = Mojo::JWT::Google->new( from_json => $tdir . '/load1.json' );
+my $testdir = dirname ( abs_path( __FILE__ ) );
+
+
+is my $er = Mojo::JWT::Google->new( from_json => "$testdir/load0.json" ), undef;
+
+
+$jwt = Mojo::JWT::Google->new( from_json => "$testdir/load1.json" );
 
 is $jwt->secret, <<EOF, 'secret match';
 -----BEGIN PRIVATE KEY-----
@@ -88,8 +95,8 @@ is $jwt->client_email, '9dvse@developer.gserviceaccount.com',
 
 is $jwt->from_json, 0, 'requires parameter';
 is $jwt->from_json('/foo/bar/baz/me'), 0, 'file must exist';
-is $jwt->from_json( $tdir . '/load3.json' ), 0, 'must have key defined';
-is $jwt->from_json( $tdir . '/load4.json' ), 0, 'must be for service account';
+is $jwt->from_json( "$testdir/load3.json" ), 0, 'must have key defined';
+is $jwt->from_json( "$testdir/load4.json" ), 0, 'must be for service account';
 
 
 $jwt = Mojo::JWT::Google->new;
