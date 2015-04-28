@@ -5,6 +5,9 @@ Easily create a JWT for Google authorization.
 [![Coverage Status](https://coveralls.io/repos/rpcme/Mojo-JWT-Google/badge.svg)](https://coveralls.io/r/rpcme/Mojo-JWT-Google)
 [![CPAN version](https://badge.fury.io/pl/Mojo-JWT-Google.svg)](http://badge.fury.io/pl/Mojo-JWT-Google)
 
+Changes in Version 0.03
+-----------------------
+Fixed unit tests - needed to include ext files in MANIFEST
 
 Changes in Version 0.02
 -----------------------
