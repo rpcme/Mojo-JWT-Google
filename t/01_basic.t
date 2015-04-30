@@ -1,4 +1,5 @@
-use strictures;
+use strict;
+use warnings;
 use Test::More;
 use Mojo::JWT::Google;
 use Mojo::Collection 'c';

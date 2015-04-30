@@ -7,7 +7,7 @@ use Mojo::Util qw(slurp);
 use Mojo::JSON qw(decode_json);
 
 BEGIN {
-  $Mojo::JWT::Google::VERSION = '0.03';
+  $Mojo::JWT::Google::VERSION = '0.04';
 }
 
 has client_email => undef;
