@@ -1,4 +1,5 @@
 package Mojo::JWT::Google;
+use utf8;
 use Mojo::Base qw(Mojo::JWT);
 use vars qw($VERSION);
 use File::Spec::Functions 'catfile';
@@ -7,7 +8,7 @@ use Mojo::Util qw(slurp);
 use Mojo::JSON qw(decode_json);
 
 BEGIN {
-  $Mojo::JWT::Google::VERSION = '0.04';
+  $Mojo::JWT::Google::VERSION = '0.05';
 }
 
 has client_email => undef;
@@ -48,7 +49,7 @@ sub _construct_claims {
   my $self = shift;
   my $result = {};
   $result->{iss}   = $self->client_email;
-  $result->{scope} = $self->scopes->join(' ');
+  $result->{scope} = $self->scopes->join(' ')->to_string;
   $result->{aud}   = $self->target;
   $result->{sub}   = $self->user_as if defined $self->user_as;
 
@@ -70,6 +71,7 @@ sub from_json {
   my $json = decode_json( slurp ( catfile( $value ) ) );
   return 0 if not defined $json->{private_key};
   return 0 if $json->{type} ne 'service_account';
+  $self->algorithm('RS256');
   $self->secret($json->{private_key});
   $self->client_email($json->{client_email});
   return 1
@@ -84,7 +86,7 @@ Mojo::JWT::Google - Service Account tokens
 
 =head1 VERSION
 
-0.01
+0.05
 
 =head1 SYNOPSIS
 
