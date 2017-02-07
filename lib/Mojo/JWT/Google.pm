@@ -2,13 +2,12 @@ package Mojo::JWT::Google;
 use utf8;
 use Mojo::Base qw(Mojo::JWT);
 use vars qw($VERSION);
-use File::Spec::Functions 'catfile';
 use Mojo::Collection 'c';
-use Mojo::Util qw(slurp);
+use Mojo::File ();
 use Mojo::JSON qw(decode_json);
 
 BEGIN {
-  $Mojo::JWT::Google::VERSION = '0.05';
+  $Mojo::JWT::Google::VERSION = '0.06';
 }
 
 has client_email => undef;
@@ -68,7 +67,7 @@ sub from_json {
   my ($self, $value) = @_;
   return 0 if not defined $value;
   return 0 if not -f $value;
-  my $json = decode_json( slurp ( catfile( $value ) ) );
+  my $json = decode_json( Mojo::File->new($value)->slurp );
   return 0 if not defined $json->{private_key};
   return 0 if $json->{type} ne 'service_account';
   $self->algorithm('RS256');
@@ -189,6 +188,10 @@ L<http://github.com/rpcme/Mojo-JWT-Google>
 =head1 AUTHOR
 
 Richard Elberger, <riche@cpan.org>
+
+=head1 CONTRIBUTORS
+
+Scott Wiersdorf, <scott@perlcode.org>
 
 =head1 COPYRIGHT AND LICENSE
 
