@@ -4,6 +4,11 @@ Easily create a JWT for Google authorization.
 [![Build Status](https://travis-ci.org/rpcme/Mojo-JWT-Google.svg?branch=master)](https://travis-ci.org/rpcme/Mojo-JWT-Google)
 [![Coverage Status](https://coveralls.io/repos/rpcme/Mojo-JWT-Google/badge.svg)](https://coveralls.io/r/rpcme/Mojo-JWT-Google)
 [![CPAN version](https://badge.fury.io/pl/Mojo-JWT-Google.svg)](http://badge.fury.io/pl/Mojo-JWT-Google)
+[![CPAN Version](https://img.shields.io/cpan/v/Mojo-JWT-Google.svg)](https://metacpan.org/pod/Mojo::JWT::Google)
+
+Changes in Version 0.07
+-----------------------
+Fixed default URL, tweaked default time and refactored scopes as a string.
 
 Changes in Version 0.03
 -----------------------

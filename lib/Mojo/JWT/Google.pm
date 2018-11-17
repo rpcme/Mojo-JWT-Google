@@ -7,14 +7,14 @@ use Mojo::File ();
 use Mojo::JSON qw(decode_json);
 
 BEGIN {
-  $Mojo::JWT::Google::VERSION = '0.06';
+  $Mojo::JWT::Google::VERSION = '0.07';
 }
 
 has client_email => undef;
 has expires_in   => 3600;
 has issue_at     => undef;
-has scopes       => sub { c->new };
-has target       => q(https://www.googleapis.com/oauth2/v3/token);
+has scopes       => undef; #sub { my ($self, $params) = shift; c($params) };
+has target       => q(https://www.googleapis.com/oauth2/v4/token);
 has user_as      => undef;
 
 sub new {
@@ -48,12 +48,14 @@ sub _construct_claims {
   my $self = shift;
   my $result = {};
   $result->{iss}   = $self->client_email;
-  $result->{scope} = $self->scopes->join(' ')->to_string;
+  $result->{scope} = $self->scopes; #->join(' ')->to_string;
   $result->{aud}   = $self->target;
   $result->{sub}   = $self->user_as if defined $self->user_as;
 
   if ( not defined $self->issue_at ) {
-    $self->set_iat(1);
+    $self->set_iat( 1 );
+    $result->{iat} = time();
+    $result->{exp} = $result->{iat} + $self->expires_in;
   }
   else {
     $self->set_iat(0);
@@ -85,12 +87,12 @@ Mojo::JWT::Google - Service Account tokens
 
 =head1 VERSION
 
-0.05
+0.07
 
 =head1 SYNOPSIS
 
 my $gjwt = Mojo::JWT::Google->new(secret => 's3cr3t',
-                                  scopes => [ '/my/scope/a', '/my/scope/b' ],
+                                  scopes => '', ## string with space sep list of scopes
                                   client_email => 'riche@cpan.org')->encode;
 
 =head1 DESCRIPTION
@@ -104,7 +106,7 @@ And add any attribute defined in this class.  The JWT is fairly useless unless
 you define your scopes.
 
  my $gjwt = Mojo::JWT::Google->new(secret => 's3cr3t',
-                                   scopes => [ '/my/scope/a', '/my/scope/b' ],
+                                   scopes => '/my/scope/a /my/scope/b' ,
                                    client_email => 'riche@cpan.org')->encode;
 
 You can also get your information automatically from the .json you received
@@ -115,7 +117,7 @@ need to impersonate.
 
  my $gjwt = Mojo::JWT::Google
    ->new( from_json => '/my/secret.json',
-          scopes    => [ '/my/scope/a', '/my/scope/b' ])->encode;
+          scopes    => '/my/scope/a /my/scope/b' ])->encode;
 
 =cut
 
@@ -151,7 +153,7 @@ your Google Business Administrator.
 =head2 target
 
 Get or set the target.  At the time of writing, there is only one valid target:
-https://www.googleapis.com/oauth2/v3/token.  This is the default value; if you
+https://www.googleapis.com/oauth2/v4/token.  This is the default value; if you
 have no need to customize this, then just fetch the default.
 
 
@@ -193,9 +195,11 @@ Richard Elberger, <riche@cpan.org>
 
 Scott Wiersdorf, <scott@perlcode.org>
 
+Peter Scott, <localshop@cpan.org>
+
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2015 by Richard Elberger
+Copyright (C) 2015-2018 by Richard Elberger
 
 This library is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
