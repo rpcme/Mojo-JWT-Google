@@ -19,12 +19,8 @@ is $jwt->client_email, undef, 'not init';
 is $jwt->client_email($client_email), $jwt, 'service_account set';
 is $jwt->client_email, $client_email, 'service_account get';
 
-is_deeply $jwt->scopes, [], 'no scopes';
-is push( @{ $jwt->scopes }, '/a/scope'), 1, 'scopes add one scope';
-is push( @{ $jwt->scopes }, '/b/scope'), 2, 'scopes add another';
-is_deeply $jwt->scopes, ['/a/scope','/b/scope'], 'scopes get all';
 
-is $jwt->target, 'https://www.googleapis.com/oauth2/v3/token', 'target get';
+is $jwt->target, 'https://www.googleapis.com/oauth2/v4/token', 'target get';
 is $jwt->target('https://a/new/target'), $jwt, 'target set';
 is $jwt->target, 'https://a/new/target', 'target get';
 
@@ -39,11 +35,11 @@ is $jwt->issue_at, '1429812717', 'issue_at get';
 # basic claim work
 $jwt = Mojo::JWT::Google->new( client_email => $client_email,
                                issue_at => '1429812717',
-                               scopes => c('/a/scope', '/b/scope'));
+                               scopes => '/a/scope /b/scope');
 
 is_deeply $jwt->claims, { iss   => $client_email,
                           scope => '/a/scope /b/scope',
-                          aud   => 'https://www.googleapis.com/oauth2/v3/token',
+                          aud   => 'https://www.googleapis.com/oauth2/v4/token',
                           exp   => '1429816317',
                           iat   => '1429812717',
                         }, 'claims based on accessor settings';
@@ -54,7 +50,7 @@ is $jwt->user_as, 'riche@cpan.org', 'get user';
 
 is_deeply $jwt->claims, { iss   => $client_email,
                           scope => '/a/scope /b/scope',
-                          aud   => 'https://www.googleapis.com/oauth2/v3/token',
+                          aud   => 'https://www.googleapis.com/oauth2/v4/token',
                           exp   => '1429816317',
                           iat   => '1429812717',
                           sub   => 'riche@cpan.org',
